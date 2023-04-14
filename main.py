@@ -16,7 +16,7 @@ bans = ["Kai'Sa",
         "Jarvan IV"]
 enemy_team = {
   "top":     "Volibear",
-  "jungle":  "",
+  "jungle":  "garfield",
   "middle":  "vex",
   "bottom":  "",
   "support": "rakan"
