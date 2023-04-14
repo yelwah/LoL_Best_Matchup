@@ -11,12 +11,12 @@ from util import champ_pool
   "bottom":  "",
   "support": ""
 """
-bans = ["", 
-        "", 
-        ""]
+bans = ["Kai'Sa", 
+        "Dr. Mundo", 
+        "Jarvan IV"]
 enemy_team = {
-  "top":     "volibear",
-  "jungle":  "maokai",
+  "top":     "Volibear",
+  "jungle":  "",
   "middle":  "vex",
   "bottom":  "",
   "support": "rakan"

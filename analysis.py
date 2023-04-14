@@ -1,6 +1,5 @@
 import pandas as pd
 import math
-from global_logger import logger
 from util import getMatchupCSVPath, getSynergyCSVPath, cleanString
 
 
@@ -15,14 +14,32 @@ def removeUnavailableChampions(
     ally_team_champs: list[str],
 ):
     """"""
-    available_champions:list[str] = []
+    available_champions: list[str] = []
     for champ in my_role_pool:
         banned = champ in bans
         on_their_team = champ in enemy_team_champs
         on_my_team = champ in ally_team_champs
         if not (banned or on_their_team or on_my_team):
-            available_champions += champ
-    my_role_pool = available_champions
+            available_champions.append(champ)
+    return available_champions
+
+
+def cleanChampNamesDict(
+    champs: dict[str, str],
+):
+    cleaned: dict[str, str] = {}
+    for role, name in champs.items():
+        cleaned[role] = cleanString(name)
+    return cleaned
+
+
+def cleanChampNamesList(
+    champs: list[str],
+):
+    cleaned: list[str] = []
+    for name in champs:
+        cleaned.append(cleanString(name))
+    return cleaned
 
 
 def bestPick(
@@ -35,54 +52,31 @@ def bestPick(
     summary_columns = ["my_champ", "total_score", "mean_wr", "mean_delta2"]
     summarized = pd.DataFrame(columns=summary_columns)
 
-    removeUnavailableChampions(
+    my_pool[my_role] = cleanChampNamesList(my_pool[my_role])
+    bans = cleanChampNamesList(bans)
+    enemy_team = cleanChampNamesDict(enemy_team)
+    ally_team = cleanChampNamesDict(ally_team)
+
+    my_pool[my_role] = removeUnavailableChampions(
         my_pool[my_role],
         bans,
         list(enemy_team.values()),
         list(ally_team.values()),
     )
 
-    temp = []
-    for champ in my_pool[my_role]:
-        on_my_team = False
-        for role, ally_champ in ally_team.items():
-            if champ == ally_champ:
-                on_my_team = True
-
-        if (
-            (not on_my_team)
-            and (champ not in enemy_team[my_role])
-            and (champ not in bans)
-        ):
-            temp.append(champ)
-
-    my_pool[my_role] = temp
-
     for my_champ in my_pool[my_role]:
         skipped = 0
-        # Fix up the string to be all lower no apostophes
-        cleanString(my_champ)
-        logger.debug("my_champ=" + my_champ + ", my_role=" + my_role)
         print("\n" + my_champ.upper() + " " + my_role.upper())
         # MATCHUPS -------------------------------------------------------------------------------------
         all_matchups_df = pd.read_csv(getMatchupCSVPath(my_role, my_champ))
         game_matchups = []
         for enemy_role, enemy_champ in enemy_team.items():
             # Skip unitialized entries, clean the champ name string for valid entries
-            if enemy_champ != None and enemy_champ != "":
-                cleanString(enemy_champ)
-                logger.debug(
-                    ".. enemy_role="
-                    + enemy_role
-                    + ", enemy_champ="
-                    + enemy_champ
-                )
-            else:
+            if enemy_champ == None or enemy_champ == "":
                 continue
 
             # Do not process mirror matchups
             if my_champ == enemy_champ:
-                logger.debug("skipping mirror matchup")
                 skipped += 1
                 continue
 
@@ -138,15 +132,9 @@ def bestPick(
         all_synergies_df = pd.read_csv(getSynergyCSVPath(my_role, my_champ))
         game_synergies = []
         for ally_role, ally_champ in ally_team.items():
-            # Skip unitialized entries, clean the champ name string for valid entries
-            if ally_champ != None and ally_champ != "":
-                cleanString(ally_champ)
-            else:
+            # Skip unitialized entries
+            if ally_champ == None or ally_champ == "":
                 continue
-
-            logger.debug(
-                ".. ally_role=" + ally_role + ", ally_champ=" + ally_champ
-            )
 
             # Try to pull matchup data from table (we check if we got anything next)
             synergy_df = getWithChampDf(all_synergies_df, ally_champ, ally_role)
@@ -233,10 +221,10 @@ def bestPick(
             total_score += score
 
         mean_wr = pd.concat([matchups_df["wr"], synergies_df["wr"]]).mean()
-        mean_delta1 = pd.concat(
-            [matchups_df["delta1"], synergies_df["delta1"]]
+        mean_delta2 = pd.concat(
+            [matchups_df["delta2"], synergies_df["delta2"]]
         ).mean()
-        row = [my_champ, total_score, mean_wr, mean_delta1]
+        row = [my_champ, total_score, mean_wr, mean_delta2]
         summarized.loc[-1] = row  # adding a row
         summarized.index = summarized.index + 1  # shifting index
 
@@ -269,32 +257,14 @@ def calcScore(my_role, enemy_role, metric):
         scaling_idx = SUPPORT
 
     if my_role == "top":
-        scale_values = [1, 0.5, 0.33, 0.25, 0.25]
+        scale_values = [1.00, 0.50, 0.33, 0.25, 0.25]
     elif my_role == "jungle":
-        scale_values = [0.35, 1, 0.5, 0.25, 0.35]
+        scale_values = [0.35, 1.00, 0.50, 0.25, 0.35]
     elif my_role == "middle":
-        scale_values = [0.1, 0.35, 1, 0.1, 0.25]
+        scale_values = [0.10, 0.35, 1.00, 0.10, 0.25]
     elif my_role == "bottom":
-        scale_values = [0.1, 0.5, 0.33, 1, 1]
+        scale_values = [0.10, 0.50, 0.33, 1.00, 1.00]
     elif my_role == "support":
-        scale_values = [0.3, 0.65, 0.5, 1, 1]
+        scale_values = [0.30, 0.65, 0.50, 1.00, 1.00]
 
-    logger.debug(
-        "roleDelta2Scaling(): my_role="
-        + my_role
-        + ", enemy_role="
-        + enemy_role
-        + ", delta1="
-        + str(metric)
-    )
-    logger.debug("... scale_index=" + str(scaling_idx))
-    logger.debug("... scaling_values=" + str(scale_values))
-    logger.debug(
-        "... calculated scaling to be " + str(scale_values[scaling_idx])
-    )
-    logger.debug("... scaled_delta1=" + str(metric * scale_values[scaling_idx]))
-    logger.debug(
-        "... normalized_scaled_delta1(score)="
-        + str(sigmoid(metric * scale_values[scaling_idx]))
-    )
     return round(sigmoid(metric) * scale_values[scaling_idx] * 100)

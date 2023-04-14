@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from os import path
-
+import re
 
 def needsUpdate(filepath: str):
     if not path.exists(filepath):
@@ -15,10 +15,9 @@ def needsUpdate(filepath: str):
             return False
 
 
-def cleanString(string: str):
-    string = ("".join(string.split())).lower()
-    string = "".join(string.split("'"))
-
+def cleanString(string: str) -> str:
+    alphabetical_regex = re.compile('[^a-z]')
+    return alphabetical_regex.sub('', string.lower())
 
 def getMatchupHTMLSavePath(role: str, champ: str):
     return (

@@ -2,3 +2,4 @@ data/**/*
 *.log
 .bashrc
 .vscode/*
+**/__pycache__/**
