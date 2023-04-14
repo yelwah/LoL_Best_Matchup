@@ -140,28 +140,10 @@ def bestPick(
             score = calcScore(my_role, ally_role, delta2)
 
             game_synergies.append(
-                [
-                    my_champ,
-                    "with",
-                    ally_champ,
-                    ally_role,
-                    score,
-                    wr,
-                    delta1,
-                    delta2,
-                ]
+                [my_champ, "with", ally_champ, ally_role, score, wr, delta1, delta2]
             )
 
-        columns = [
-            "my_champ",
-            "relation",
-            "their_champ",
-            "their_role",
-            "score",
-            "wr",
-            "delta1",
-            "delta2",
-        ]
+        columns = ["", "", "", "", "score", "wr", "delta1", "delta2"]
         print(f"Matchup Data {'-'*60}")
         matchups_df = pd.DataFrame(game_matchups, columns=columns)
         print(matchups_df)
