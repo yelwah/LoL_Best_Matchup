@@ -4,30 +4,38 @@ global_logger.init()
 import analysis
 from util import champ_pool
 
-"""
+my_role = "middle"
+bans = ["","",""]
+enemy_team = {
   "top":     "",
   "jungle":  "",
   "middle":  "",
   "bottom":  "",
   "support": ""
-"""
-bans = ["Kai'Sa", 
-        "Dr. Mundo", 
-        "Jarvan IV"]
-enemy_team = {
-  "top":     "Volibear",
-  "jungle":  "garfield",
-  "middle":  "vex",
-  "bottom":  "",
-  "support": "rakan"
 }
 ally_team = {
-  "top":     "yone",
-  "jungle":  "nidalee",
+  "top":     "",
+  "jungle":  "",
   "middle":  "",
   "bottom":  "",
-  "support": "sona"
+  "support": ""
 }
-analysis.bestPick("middle", bans, champ_pool, enemy_team, ally_team)
 
-
+"""
+bans = ["","",""]
+enemy_team = {
+  "top":     "",
+  "jungle":  "",
+  "middle":  "",
+  "bottom":  "",
+  "support": ""
+}
+ally_team = {
+  "top":     "",
+  "jungle":  "",
+  "middle":  "",
+  "bottom":  "",
+  "support": ""
+}
+"""
+analysis.bestPick(my_role, bans, champ_pool, enemy_team, ally_team)
