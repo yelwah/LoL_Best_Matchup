@@ -8,6 +8,23 @@ def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
 
+def removeUnavailableChampions(
+    my_role_pool: list[str],
+    bans: list[str],
+    enemy_team_champs: list[str],
+    ally_team_champs: list[str],
+):
+    """"""
+    available_champions:list[str] = []
+    for champ in my_role_pool:
+        banned = champ in bans
+        on_their_team = champ in enemy_team_champs
+        on_my_team = champ in ally_team_champs
+        if not (banned or on_their_team or on_my_team):
+            available_champions += champ
+    my_role_pool = available_champions
+
+
 def bestPick(
     my_role: str,
     bans: list[str],
@@ -18,6 +35,13 @@ def bestPick(
     summary_columns = ["my_champ", "total_score", "mean_wr", "mean_delta2"]
     summarized = pd.DataFrame(columns=summary_columns)
 
+    removeUnavailableChampions(
+        my_pool[my_role],
+        bans,
+        list(enemy_team.values()),
+        list(ally_team.values()),
+    )
+
     temp = []
     for champ in my_pool[my_role]:
         on_my_team = False
@@ -25,11 +49,13 @@ def bestPick(
             if champ == ally_champ:
                 on_my_team = True
 
-        if ((not on_my_team) and 
-            (champ not in enemy_team[my_role]) and 
-            (champ not in bans)):
+        if (
+            (not on_my_team)
+            and (champ not in enemy_team[my_role])
+            and (champ not in bans)
+        ):
             temp.append(champ)
-    
+
     my_pool[my_role] = temp
 
     for my_champ in my_pool[my_role]:
@@ -148,7 +174,7 @@ def bestPick(
                     + " with "
                     + ally_champ.capitalize()
                     + " "
-                    + ally_role 
+                    + ally_role
                 )
                 skipped += 1
                 wr = 50.0
@@ -205,7 +231,7 @@ def bestPick(
                 + "(Skipped synergies are counted as an even matchup for score (50), and are omitted from means)"
             )
             total_score += score
-        
+
         mean_wr = pd.concat([matchups_df["wr"], synergies_df["wr"]]).mean()
         mean_delta1 = pd.concat(
             [matchups_df["delta1"], synergies_df["delta1"]]
