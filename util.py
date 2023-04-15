@@ -67,9 +67,9 @@ full_champ_pool = {
     "support": ["braum", "thresh", "nautilus", "blitzcrank"],
 }
 champ_pool: dict[str, list[str]]= {
-    "top":["yone", "malphite", "illaoi", "garen"],
-    "jungle": [],
-    "middle": ["diana", "viktor", "ahri", "yone"],
-    "bottom": ["jhin", "jinx", "ashe"],
-    "support": [],
+    "top":["yone", "akshan"],
+    "jungle": ["diana", "vi"],
+    "middle": ["viktor", "ahri", "yone", "akshan"],
+    "bottom": ["jhin, samira"],
+    "support": ["thresh", "braum"],
 }
