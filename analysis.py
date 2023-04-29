@@ -63,6 +63,33 @@ def sufficientGames(matchup_df, my_champ, other_champ, role):
     return sufficient_quantity
 
 
+def filtedValidMatches(all_entries_df, team, my_champ, my_role):
+    valid_entries = []
+    for role, champ in team.items():
+        # Skip unitialized entries
+        if champ == None or champ == "":
+            continue
+
+        # Try to pull matchup data from table
+        matchup_df = getWithChampDf(all_entries_df, champ, role)
+
+        if not matchupExists(matchup_df, my_champ, champ, role) or not sufficientGames(
+            matchup_df, my_champ, champ, role
+        ):
+            wr = 50.0
+            delta1 = 0.00
+            delta2 = 0.00
+        else:
+            wr = matchup_df.loc[0]["wr"]
+            delta1 = matchup_df.loc[0]["delta1"]
+            delta2 = matchup_df.loc[0]["delta2"]
+
+        score1 = calcScore(my_role, role, delta1)
+        score2 = calcScore(my_role, role, delta2)
+        valid_entries.append([my_champ, "and", champ, role, score1, score2, wr, delta1, delta2])
+    return valid_entries
+
+
 def bestPick(
     my_role: str,
     bans: list[str],
@@ -70,7 +97,14 @@ def bestPick(
     enemy_team: dict[str, str],
     ally_team: dict[str, str],
 ):
-    summary_columns = ["my_champ", "total_score", "mean_wr", "mean_delta2"]
+    summary_columns = [
+        "my_champ",
+        "total_score1",
+        "total_score2",
+        "mean_wr",
+        "mean_delta1",
+        "mean_delta2",
+    ]
     summarized = pd.DataFrame(columns=summary_columns)
 
     my_pool[my_role] = cleanChampNamesList(my_pool[my_role])
@@ -90,60 +124,13 @@ def bestPick(
         print("\n" + my_champ.upper() + " " + my_role.upper())
         # MATCHUPS -------------------------------------------------------------------------------
         all_matchups_df = pd.read_csv(getMatchupCSVPath(my_role, my_champ))
-        game_matchups = []
-        for enemy_role, enemy_champ in enemy_team.items():
-            # Skip unitialized entries
-            if enemy_champ == None or enemy_champ == "":
-                continue
-
-            # Try to pull matchup data from table
-            matchup_df = getWithChampDf(all_matchups_df, enemy_champ, enemy_role)
-
-            if not matchupExists(
-                matchup_df, my_champ, enemy_champ, enemy_role
-            ) or not sufficientGames(matchup_df, my_champ, enemy_champ, enemy_role):
-                wr = 50.0
-                delta1 = 0.00
-                delta2 = 0.00
-            else:
-                wr = matchup_df.loc[0]["wr"]
-                delta1 = matchup_df.loc[0]["delta1"]
-                delta2 = matchup_df.loc[0]["delta2"]
-
-            score = calcScore(my_role, enemy_role, delta2)
-            game_matchups.append(
-                [my_champ, "vs", enemy_champ, enemy_role, score, wr, delta1, delta2]
-            )
+        game_matchups = filtedValidMatches(all_matchups_df, enemy_team, my_champ, my_role)
 
         # SYNERGIES ------------------------------------------------------------------------------
         all_synergies_df = pd.read_csv(getSynergyCSVPath(my_role, my_champ))
-        game_synergies = []
-        for ally_role, ally_champ in ally_team.items():
-            # Skip unitialized entries
-            if ally_champ == None or ally_champ == "":
-                continue
+        game_synergies = filtedValidMatches(all_synergies_df, ally_team, my_champ, my_role)
 
-            # Try to pull matchup data from table
-            synergy_df = getWithChampDf(all_synergies_df, ally_champ, ally_role)
-
-            if not matchupExists(
-                matchup_df, my_champ, ally_champ, ally_role
-            ) or not sufficientGames(matchup_df, my_champ, ally_champ, ally_role):
-                wr = 0.50
-                delta1 = 0.00
-                delta2 = 0.00
-            else:
-                wr = synergy_df.loc[0]["wr"]
-                delta1 = synergy_df.loc[0]["delta1"]
-                delta2 = synergy_df.loc[0]["delta2"]
-
-            score = calcScore(my_role, ally_role, delta2)
-
-            game_synergies.append(
-                [my_champ, "with", ally_champ, ally_role, score, wr, delta1, delta2]
-            )
-
-        columns = ["", "", "", "", "score", "wr", "delta1", "delta2"]
+        columns = ["", "", "", "", "score1", "score2", "wr", "delta1", "delta2"]
         print(f"Matchup Data {'-'*60}")
         matchups_df = pd.DataFrame(game_matchups, columns=columns)
         print(matchups_df)
@@ -151,18 +138,20 @@ def bestPick(
         synergies_df = pd.DataFrame(game_synergies, columns=columns)
         print(synergies_df)
 
-        total_score = pd.concat([matchups_df["score"], synergies_df["score"]]).sum()
-
+        total_score1 = pd.concat([matchups_df["score1"], synergies_df["score1"]]).sum()
+        total_score2 = pd.concat([matchups_df["score2"], synergies_df["score2"]]).sum()
         mean_wr = pd.concat([matchups_df["wr"], synergies_df["wr"]]).mean()
+        mean_delta1 = pd.concat([matchups_df["delta1"], synergies_df["delta1"]]).mean()
         mean_delta2 = pd.concat([matchups_df["delta2"], synergies_df["delta2"]]).mean()
-        row = [my_champ, total_score, mean_wr, mean_delta2]
+        row = [my_champ, total_score1, total_score2, mean_wr, mean_delta1, mean_delta2]
         summarized.loc[-1] = row  # adding a row
         summarized.index = summarized.index + 1  # shifting index
 
-    print("\n" + "-" * 55)
+    print("\nMAX MID SCORES RANGE -180 <---> 180")
+    print("-" * 75)
     print(" SUMMARIZED BEST PICK DATA (Highest Score = Best Pick)")
-    print("-" * 55)
-    print(summarized.sort_values(by=["total_score"]))
+    print("-" * 75)
+    print(summarized.sort_values(by=["total_score1"]))
 
 
 def getWithChampDf(with_champ_df: pd.DataFrame, their_champ: str, their_role: str):
