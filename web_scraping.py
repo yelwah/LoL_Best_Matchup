@@ -33,8 +33,6 @@ def webToHtmlFile(
     matchup_save_paths: list[str],
     synergy_save_paths: list[str],
 ):
-    # get url for a specific game, creating url that looks like this:
-    # https://www.pro-football-reference.com/boxscores/202109190phi.htm
     if len(urls) != len(matchup_save_paths) or len(urls) != len(
         synergy_save_paths
     ):
