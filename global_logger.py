@@ -8,7 +8,7 @@ logger = logging.getLogger("")
      WARNING   : 30
      INFO      : 20
      DEBUG     : 10
-     NOSET     :  0
+     NOTSET     :  0
 '''
 def init():
   # function_only_format = "%(funcName)s(): %(message)s"

@@ -9,24 +9,25 @@ stat_types = ["wr", "delta1", "delta2", "pr", "games"]
 
 def parseLolalytics(pool:dict[str, list[str]], force:bool = False):
   print("\n Parsing newly updated matchup data from Lolalytics\n" + ("*" * 80))
+  at_least_one_parsed = False
   for my_role, my_champs in pool.items():
     for champ in my_champs:
-
-      # Print which Champion is being Parsed
-      logger.info("-" * 74)
-      logger.info("PARSING DATA FOR " + champ.upper() + " " + my_role.upper())
-      logger.info("-" * 74)
-      
       # Fix up the string to be all lower no apostophes
       cleanString(champ)
       
       # If necessary, parse the matchup data for this champion in this role
       matchup_csv_path = getMatchupCSVPath(my_role, champ)
-      if needsUpdate(matchup_csv_path) or force:
+      matchup_html_path = getMatchupHTMLSavePath(my_role, champ)
+
+      if os.path.exists(matchup_html_path) and (needsUpdate(matchup_csv_path, 1) or force):
+        at_least_one_parsed = True
+        # Print which Champion is being Parsed
+        logger.info("PARSING DATA FOR " + champ.upper() + " " + my_role.upper())
+      
         # Load the Matchup HTML page from file
-        matchup_html_path = getMatchupHTMLSavePath(my_role, champ)
         with open(matchup_html_path, encoding="utf-8") as fp:
           matchup_soup = BeautifulSoup(fp, 'lxml')
+        print(f"os.remove({matchup_html_path})")
         os.remove(matchup_html_path)
         matchups_df = getMatchupsDataFrame(matchup_soup)
 
@@ -34,16 +35,20 @@ def parseLolalytics(pool:dict[str, list[str]], force:bool = False):
       
       # If necessary, parse the synergy data for this champion in this role
       synergy_csv_path = getSynergyCSVPath(my_role, champ)
-      if needsUpdate(synergy_csv_path) or force:
+      synergy_html_path = getSynergyHTMLSavePath(my_role, champ)
+
+      if os.path.exists(synergy_html_path) and (needsUpdate(synergy_csv_path, 1) or force):
+        at_least_one_parsed = True
         # Load the Synergy HTML page from file
-        synergy_html_path = getSynergyHTMLSavePath(my_role, champ)
         with open(synergy_html_path, encoding="utf-8") as fp:
           synergy_soup = BeautifulSoup(fp, 'lxml')
-
+        print(f"os.remove({synergy_html_path})")
+        os.remove(synergy_html_path)
         synergies_df = getSynergiesDataFrame(synergy_soup)
 
         synergies_df.to_csv(synergy_csv_path)
-
+  if not at_least_one_parsed:
+    print("All current matchups and synergies are already parsed.")
   print("\nParsing complete.\n")
 
 def getMatchupsDataFrame(matchup_soup:BeautifulSoup):

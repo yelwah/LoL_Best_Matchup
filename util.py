@@ -1,15 +1,19 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+from global_logger import logger
 from os import path
 import re
 
-def needsUpdate(filepath: str):
+def needsUpdate(filepath: str, num_days: int):
     if not path.exists(filepath):
         return True
     else:
         epoch_time = path.getmtime(filepath)
         last_updated_date = datetime.fromtimestamp(epoch_time).date()
         todays_date = date.today()
-        if last_updated_date != todays_date:
+        logger.debug(str(todays_date + timedelta(days=-(num_days)))
+            + " >=? " + str(last_updated_date) + " = " + str((todays_date + 
+            timedelta(days=-(4.5))) > last_updated_date))
+        if (todays_date + timedelta(days=-(num_days))) > last_updated_date:
             return True
         else:
             return False
@@ -57,26 +61,25 @@ def getSynergyCSVPath(role: str, champ: str):
         + champ
         + ".csv"
     )
-
-
-full_champ_pool = {
-    "top": ["yone", "garen", "sion", "malphite"],
-    "jungle": ["diana", "graves", "sejuani", "ekko", "vi"],
-    "middle": ["diana", "ahri", "viktor", "fizz", "vel'koz"],
-    "bottom": ["missfortune", "tristana", "jhin", "jinx", "ashe"],
-    "support": ["braum", "thresh", "nautilus", "blitzcrank"],
-}
-# champ_pool: dict[str, list[str]]= {
-#     "top":["yone", "akshan"],
-#     "jungle": ["diana", "vi"],
-#     "middle": ["viktor", "ahri", "yone", "akshan"],
-#     "bottom": ["jhin", "samira"],
-#     "support": ["thresh", "braum"],
-# }
 champ_pool: dict[str, list[str]]= {
-    "top":["yone", "akshan"],
+    "top":["illaoi", "malphite", "yone", "akshan"],
     "jungle": [],
-    "middle": ["viktor", "ahri", "yone", "akshan"],
+    "middle": ["ahri", "yone", "akshan", "lissandra",],
     "bottom": [],
     "support": [],
 }
+# expanded_champ_pool: dict[str, list[str]]= {
+#     "top":["yone", "garen", "illaoi", "malphite", "akshan", "diana", "lissandra"],
+#     "jungle": [],
+#     "middle": ["orianna", "ahri", "yone", "akshan", "diana", "lissandra", "viktor"],
+#     "bottom": [],
+#     "support": [],
+# }
+# expanded_champ_pool: dict[str, list[str]]= {
+#     "top":["yone", "illaoi", "malphite", "akshan", "lissandra", "diana", "jax"],
+#     "jungle": ["kayn", "jax", "brand", "diana"],
+#     "middle": ["orianna", "ahri", "yone", "akshan", "diana", "lissandra", "viktor"],
+#     "bottom": [],
+#     "support": [],
+# }
+# champ_pool = expanded_champ_pool

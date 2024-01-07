@@ -1,8 +1,7 @@
 from global_logger import logger
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import ChromeOptions
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.remote.webelement import WebElement
@@ -14,6 +13,8 @@ from util import (
     needsUpdate,
     getMatchupHTMLSavePath,
     getSynergyHTMLSavePath,
+    getSynergyCSVPath,
+    getMatchupCSVPath,
     cleanString,
 )
 
@@ -23,7 +24,7 @@ def getLolalyticsUrl(role: str, champ: str):
         "https://lolalytics.com/lol/"
         + champ
         + "/build/?lane="
-        + role
+        + role 
     )
 
 
@@ -39,21 +40,25 @@ def webToHtmlFile(
     ):
         print("webToHtmlFile: ERROR lists different sizes")
         exit(0)
-
-    options = Options()
+ 
+    options = ChromeOptions()
     options.add_argument("start-maximized")
-    options.add_argument("--log-level=OFF")
+    options.add_experimental_option("excludeSwitches", ['enable-logging'])
+
     service = Service(chromeMgr().install())
     driver = webdriver.Chrome(service=service, options=options)
     for index in range(len(urls)):
         logger.info("Scraping " + urls[index])
         driver.get(urls[index])
-        time.sleep(
-            1.5
-        )  # sometimes driver.get moves too fast and pulls in the partially loaded webpage
+        # sometimes driver.get moves too fast and pulls in the partially loaded webpage
+        time.sleep(2.5)  
         actions = ActionChains(driver)
 
-        matchups_html: str = scrapeMatchup(driver, actions)
+        try:
+            matchups_html: str = scrapeMatchup(driver, actions)
+        except AssertionError as e:
+            logger.error(f"{e}: Failed to scrape data for {urls[index]}")
+            continue
         matchup_soup = BeautifulSoup(matchups_html, "lxml")
         with open(matchup_save_paths[index], "w", encoding="utf-8") as file:
             file.write(str(matchup_soup.prettify()))
@@ -163,8 +168,8 @@ def fetchLolalytics(pool: dict[str, list[str]], force: bool = False):
             matchups_path = getMatchupHTMLSavePath(my_role, champ)
             synergies_path = getSynergyHTMLSavePath(my_role, champ)
             if (
-                needsUpdate(matchups_path)
-                or needsUpdate(synergies_path)
+                needsUpdate(getMatchupCSVPath(my_role, champ), 3)
+                or needsUpdate(getSynergyCSVPath(my_role, champ), 3)
                 or force
             ):
                 # Fix up the string to be all lower no apostophes

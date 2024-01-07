@@ -99,11 +99,12 @@ def bestPick(
 ):
     summary_columns = [
         "my_champ",
-        "total_score1",
-        "total_score2",
-        "mean_wr",
-        "mean_delta1",
-        "mean_delta2",
+        "sc1",
+        "sc2",
+        "∑sc",
+        "wr",
+        "Δ1",
+        "Δ2",
     ]
     summarized = pd.DataFrame(columns=summary_columns)
 
@@ -140,10 +141,11 @@ def bestPick(
 
         total_score1 = pd.concat([matchups_df["score1"], synergies_df["score1"]]).sum()
         total_score2 = pd.concat([matchups_df["score2"], synergies_df["score2"]]).sum()
+        total_score_sum = pd.concat([matchups_df["score1"], synergies_df["score1"], matchups_df["score2"], synergies_df["score2"]]).sum()
         mean_wr = pd.concat([matchups_df["wr"], synergies_df["wr"]]).mean()
         mean_delta1 = pd.concat([matchups_df["delta1"], synergies_df["delta1"]]).mean()
         mean_delta2 = pd.concat([matchups_df["delta2"], synergies_df["delta2"]]).mean()
-        row = [my_champ, total_score1, total_score2, mean_wr, mean_delta1, mean_delta2]
+        row = [my_champ, total_score1, total_score2, total_score_sum, mean_wr, mean_delta1, mean_delta2]
         summarized.loc[-1] = row  # adding a row
         summarized.index = summarized.index + 1  # shifting index
 
@@ -151,7 +153,7 @@ def bestPick(
     print("-" * 75)
     print(" SUMMARIZED BEST PICK DATA (Highest Score = Best Pick)")
     print("-" * 75)
-    print(summarized.sort_values(by=["total_score1"]))
+    print(summarized.sort_values(by=["∑sc"]))
 
 
 def getWithChampDf(with_champ_df: pd.DataFrame, their_champ: str, their_role: str):
