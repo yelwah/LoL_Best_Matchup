@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "lol-best-pick"
+version = "0.1.0"
+description = "Based on the champions picked already in your lobby, find the best champion choice within your champion pool."
+authors = ["Jared Hawley <j.yelwah@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+selenium = "^4.18.1"
+bs4 = "^0.0.2"
+pandas = "^2.2.1"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.2.2"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
