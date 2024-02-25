@@ -1,6 +1,8 @@
-import pandas as pd
 import math
-from util import getMatchupCSVPath, getSynergyCSVPath, cleanString
+
+import pandas as pd
+
+from util import cleanString, getMatchupCSVPath, getSynergyCSVPath
 
 
 def sigmoid(x):
@@ -12,7 +14,7 @@ def removeUnavailableChampions(
     bans: list[str],
     enemy_team_champs: list[str],
     ally_team_champs: list[str],
-):
+) -> list[str]:
     available_champions: list[str] = []
     for champ in my_role_pool:
         banned = champ in bans
@@ -25,7 +27,7 @@ def removeUnavailableChampions(
 
 def cleanChampNamesDict(
     champs: dict[str, str],
-):
+) -> dict[str, str]:
     cleaned: dict[str, str] = {}
     for role, name in champs.items():
         cleaned[role] = cleanString(name)
@@ -34,7 +36,7 @@ def cleanChampNamesDict(
 
 def cleanChampNamesList(
     champs: list[str],
-):
+) -> list[str]:
     cleaned: list[str] = []
     for name in champs:
         cleaned.append(cleanString(name))
@@ -86,7 +88,9 @@ def filtedValidMatches(all_entries_df, team, my_champ, my_role):
 
         score1 = calcScore(my_role, role, delta1)
         score2 = calcScore(my_role, role, delta2)
-        valid_entries.append([my_champ, "and", champ, role, score1, score2, wr, delta1, delta2])
+        valid_entries.append(
+            [my_champ, "and", champ, role, score1, score2, wr, delta1, delta2]
+        )
     return valid_entries
 
 
@@ -96,7 +100,7 @@ def bestPick(
     my_pool: dict[str, list[str]],
     enemy_team: dict[str, str],
     ally_team: dict[str, str],
-):
+) -> None:
     summary_columns = [
         "my_champ",
         "sc1",
@@ -125,11 +129,15 @@ def bestPick(
         print("\n" + my_champ.upper() + " " + my_role.upper())
         # MATCHUPS -------------------------------------------------------------------------------
         all_matchups_df = pd.read_csv(getMatchupCSVPath(my_role, my_champ))
-        game_matchups = filtedValidMatches(all_matchups_df, enemy_team, my_champ, my_role)
+        game_matchups = filtedValidMatches(
+            all_matchups_df, enemy_team, my_champ, my_role
+        )
 
         # SYNERGIES ------------------------------------------------------------------------------
         all_synergies_df = pd.read_csv(getSynergyCSVPath(my_role, my_champ))
-        game_synergies = filtedValidMatches(all_synergies_df, ally_team, my_champ, my_role)
+        game_synergies = filtedValidMatches(
+            all_synergies_df, ally_team, my_champ, my_role
+        )
 
         columns = ["", "", "", "", "score1", "score2", "wr", "delta1", "delta2"]
         print(f"Matchup Data {'-'*60}")
@@ -141,11 +149,26 @@ def bestPick(
 
         total_score1 = pd.concat([matchups_df["score1"], synergies_df["score1"]]).sum()
         total_score2 = pd.concat([matchups_df["score2"], synergies_df["score2"]]).sum()
-        total_score_sum = pd.concat([matchups_df["score1"], synergies_df["score1"], matchups_df["score2"], synergies_df["score2"]]).sum()
+        total_score_sum = pd.concat(
+            [
+                matchups_df["score1"],
+                synergies_df["score1"],
+                matchups_df["score2"],
+                synergies_df["score2"],
+            ]
+        ).sum()
         mean_wr = pd.concat([matchups_df["wr"], synergies_df["wr"]]).mean()
         mean_delta1 = pd.concat([matchups_df["delta1"], synergies_df["delta1"]]).mean()
         mean_delta2 = pd.concat([matchups_df["delta2"], synergies_df["delta2"]]).mean()
-        row = [my_champ, total_score1, total_score2, total_score_sum, mean_wr, mean_delta1, mean_delta2]
+        row = [
+            my_champ,
+            total_score1,
+            total_score2,
+            total_score_sum,
+            mean_wr,
+            mean_delta1,
+            mean_delta2,
+        ]
         summarized.loc[-1] = row  # adding a row
         summarized.index = summarized.index + 1  # shifting index
 
@@ -156,7 +179,9 @@ def bestPick(
     print(summarized.sort_values(by=["∑sc"]))
 
 
-def getWithChampDf(with_champ_df: pd.DataFrame, their_champ: str, their_role: str):
+def getWithChampDf(
+    with_champ_df: pd.DataFrame, their_champ: str, their_role: str
+) -> pd.DataFrame:
     df = with_champ_df.loc[with_champ_df["role"] == their_role]
     df = df.loc[df["champ"] == their_champ]
     df.reset_index(drop=True, inplace=True)

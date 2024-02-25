@@ -2,8 +2,8 @@ import global_logger
 
 global_logger.init()
 
-import web_scraping
 import parse_lolalytics
+import web_scraping
 from util import champ_pool
 
 web_scraping.fetchLolalytics(champ_pool, force=bool(0))

@@ -1,47 +1,52 @@
-from global_logger import logger
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from selenium.webdriver import ChromeOptions
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from webdriver_manager.chrome import ChromeDriverManager as chromeMgr
 import time
+
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver import ChromeOptions
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+from webdriver_manager.chrome import ChromeDriverManager as chromeMgr
+
+from global_logger import logger
 from util import (
-    needsUpdate,
-    getMatchupHTMLSavePath,
-    getSynergyHTMLSavePath,
-    getSynergyCSVPath,
-    getMatchupCSVPath,
     cleanString,
+    getMatchupCSVPath,
+    getMatchupHTMLSavePath,
+    getSynergyCSVPath,
+    getSynergyHTMLSavePath,
+    needsUpdate,
 )
 
 
-def getLolalyticsUrl(role: str, champ: str):
-    return (
-        "https://lolalytics.com/lol/"
-        + champ
-        + "/build/?lane="
-        + role 
-    )
+def getLolalyticsUrl(role: str, champ: str) -> str:
+    return "https://lolalytics.com/lol/" + champ + "/build/?lane=" + role
+
+
+def get_html(el: WebElement, attribute: str) -> str:
+    el_html = el.get_attribute(attribute)
+    if el_html is None:
+        raise RuntimeError(
+            f"Could not find element named '{attribute}' in element:\n{str(el)}"
+        )
+    else:
+        return el_html
 
 
 def webToHtmlFile(
     urls: list[str],
     matchup_save_paths: list[str],
     synergy_save_paths: list[str],
-):
-    if len(urls) != len(matchup_save_paths) or len(urls) != len(
-        synergy_save_paths
-    ):
+) -> None:
+    if len(urls) != len(matchup_save_paths) or len(urls) != len(synergy_save_paths):
         print("webToHtmlFile: ERROR lists different sizes")
         exit(0)
- 
+
     options = ChromeOptions()
     options.add_argument("start-maximized")
-    options.add_experimental_option("excludeSwitches", ['enable-logging'])
+    options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
     service = Service(chromeMgr().install())
     driver = webdriver.Chrome(service=service, options=options)
@@ -49,7 +54,7 @@ def webToHtmlFile(
         logger.info("Scraping " + urls[index])
         driver.get(urls[index])
         # sometimes driver.get moves too fast and pulls in the partially loaded webpage
-        time.sleep(2.5)  
+        time.sleep(2.5)
         actions = ActionChains(driver)
 
         try:
@@ -73,7 +78,7 @@ def webToHtmlFile(
     driver.quit()
 
 
-def scrapeMatchup(driver: WebDriver, actions):
+def scrapeMatchup(driver: WebDriver, actions: ActionChains) -> str:
     # Find all Counters panels (We expect 5)
     elements: list[WebElement] = driver.find_elements(
         By.CLASS_NAME, "CountersPanel_counters__U8zc5"
@@ -92,20 +97,20 @@ def scrapeMatchup(driver: WebDriver, actions):
         scrollbar = element.find_element(By.CLASS_NAME, "Panel_data__dtE8F")
 
         # Get the add the initial scroll position to the final html
-        html += element.get_attribute("innerHTML")
+        html += get_html(element, "innerHTML")
 
         # Move by right by 900 pixels 5 times, appending the html each time to scrape all the matchup data
         move_offset = -900
-        for rep in range(0, 7):
+        for _ in range(0, 7):
             actions.click_and_hold(scrollbar).move_by_offset(
                 move_offset, 0
             ).release().perform()
-            html += element.get_attribute("innerHTML")
+            html += get_html(element, "innerHTML")
 
     return html
 
 
-def scrapeSynergy(driver: WebDriver, actions):
+def scrapeSynergy(driver: WebDriver, actions: ActionChains) -> str:
     # Find the Table of buttons that controls the Counters and Synergies Section, Move into View
     buttonTable: WebElement = driver.find_element(
         By.CLASS_NAME, "CounterButtons_set__99iaF"
@@ -133,19 +138,19 @@ def scrapeSynergy(driver: WebDriver, actions):
         scrollbar = element.find_element(By.CLASS_NAME, "Panel_data__dtE8F")
 
         # Get the add the initial scroll position to the final html
-        html += element.get_attribute("innerHTML")
+        html += get_html(element, "innerHTML")
 
         # Move by right by 900 pixels 5 times, appending the html each time to scrape all the matchup data
         move_offset = 900
-        for rep in range(0, 7):
+        for _ in range(0, 7):
             actions.click_and_hold(scrollbar).move_by_offset(
                 move_offset, 0
             ).release().perform()
-            html += element.get_attribute("innerHTML")
+            html += get_html(element, "innerHTML")
     return html
 
 
-def fetchLolalytics(pool: dict[str, list[str]], force: bool = False):
+def fetchLolalytics(pool: dict[str, list[str]], force: bool = False) -> None:
     """
     Fetches matchup stats for all given champsions and saves the matchup data
       per champion
