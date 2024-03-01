@@ -2,7 +2,7 @@ import math
 
 import pandas as pd
 
-from .util import cleanString, getMatchupCSVPath, getSynergyCSVPath
+from lol_best_pick.util import cleanString, getMatchupCSVPath, getSynergyCSVPath
 
 
 def sigmoid(x):

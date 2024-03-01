@@ -10,8 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager as chromeMgr
 
-from .global_logger import logger
-from .util import (
+from lol_best_pick.global_logger import logger
+from lol_best_pick.util import (
     cleanString,
     getMatchupCSVPath,
     getMatchupHTMLSavePath,

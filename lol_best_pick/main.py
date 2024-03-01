@@ -2,8 +2,8 @@ import argparse
 
 import yaml
 
-from . import analysis, parse_lolalytics, web_scraping
-from .util import PROJECT_ROOT_DIR
+from lol_best_pick import analysis, parse_lolalytics, web_scraping
+from lol_best_pick.util import PROJECT_ROOT_DIR
 
 
 def update(config_path: str) -> None:

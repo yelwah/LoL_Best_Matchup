@@ -5,8 +5,8 @@ from typing import Any
 import pandas as pd
 from bs4 import BeautifulSoup, PageElement
 
-from .global_logger import logger
-from .util import (
+from lol_best_pick.global_logger import logger
+from lol_best_pick.util import (
     cleanString,
     getMatchupCSVPath,
     getMatchupHTMLSavePath,

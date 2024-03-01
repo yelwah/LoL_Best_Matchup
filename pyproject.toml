@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Based on the champions picked already in your lobby, find the best champion choice within your champion pool."
 authors = ["Jared Hawley <j.yelwah@gmail.com>"]
 readme = "README.md"
-package-mode = false
+package-mode = true
 
 [tool.poetry.dependencies]
 python = "^3.12"

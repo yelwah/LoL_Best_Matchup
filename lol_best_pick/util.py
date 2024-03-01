@@ -2,7 +2,7 @@ import re
 from datetime import date, datetime, timedelta
 from os import path
 
-from .global_logger import logger
+from lol_best_pick.global_logger import logger
 
 PROJECT_ROOT_DIR = path.dirname(path.abspath(__file__))
 
