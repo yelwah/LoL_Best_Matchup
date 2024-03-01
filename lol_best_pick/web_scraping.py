@@ -10,8 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager as chromeMgr
 
-from global_logger import logger
-from util import (
+from .global_logger import logger
+from .util import (
     cleanString,
     getMatchupCSVPath,
     getMatchupHTMLSavePath,
@@ -45,7 +45,8 @@ def webToHtmlFile(
         exit(0)
 
     options = ChromeOptions()
-    options.add_argument("start-maximized")
+    options.add_argument("--headless")
+    # options.add_argument("start-maximized")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
     service = Service(chromeMgr().install())
@@ -193,4 +194,5 @@ def fetchLolalytics(pool: dict[str, list[str]], force: bool = False) -> None:
     if len(urls) != 0:
         webToHtmlFile(urls, matchup_csvs, synergies_csvs)
 
+    print("\nScraping complete.\n")
     print("\nScraping complete.\n")

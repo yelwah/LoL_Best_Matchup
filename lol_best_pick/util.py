@@ -2,7 +2,9 @@ import re
 from datetime import date, datetime, timedelta
 from os import path
 
-from global_logger import logger
+from .global_logger import logger
+
+PROJECT_ROOT_DIR = path.dirname(path.abspath(__file__))
 
 
 def needsUpdate(filepath: str, num_days: int) -> bool:
@@ -31,54 +33,16 @@ def cleanString(string: str) -> str:
 
 
 def getMatchupHTMLSavePath(role: str, champ: str) -> str:
-    return (
-        "C:\\dev\\repos\\Python\\Best_Matchup\\data\\"
-        + role
-        + "\\html\\"
-        + champ
-        + "_matchups.html"
-    )
+    return PROJECT_ROOT_DIR + "\\" + role + "\\html\\" + champ + "_matchups.html"
 
 
 def getSynergyHTMLSavePath(role: str, champ: str) -> str:
-    return (
-        "C:\\dev\\repos\\Python\\Best_Matchup\\data\\"
-        + role
-        + "\\html\\"
-        + champ
-        + "_synergies.html"
-    )
+    return PROJECT_ROOT_DIR + "\\" + role + "\\html\\" + champ + "_synergies.html"
 
 
 def getMatchupCSVPath(role: str, champ: str) -> str:
-    return (
-        "C:\\dev\\repos\\Python\\Best_Matchup\\data\\"
-        + role
-        + "\\matchups\\"
-        + champ
-        + ".csv"
-    )
+    return PROJECT_ROOT_DIR + "\\" + role + "\\matchups\\" + champ + ".csv"
 
 
 def getSynergyCSVPath(role: str, champ: str) -> str:
-    return (
-        "C:\\dev\\repos\\Python\\Best_Matchup\\data\\"
-        + role
-        + "\\synergies\\"
-        + champ
-        + ".csv"
-    )
-
-
-champ_pool: dict[str, list[str]] = {
-    "top": ["illaoi", "malphite", "yone", "akshan"],
-    "jungle": [],
-    "middle": [
-        "ahri",
-        "yone",
-        "akshan",
-        "lissandra",
-    ],
-    "bottom": [],
-    "support": [],
-}
+    return PROJECT_ROOT_DIR + "\\" + role + "\\synergies\\" + champ + ".csv"

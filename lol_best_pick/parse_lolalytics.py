@@ -5,8 +5,8 @@ from typing import Any
 import pandas as pd
 from bs4 import BeautifulSoup, PageElement
 
-from global_logger import logger
-from util import (
+from .global_logger import logger
+from .util import (
     cleanString,
     getMatchupCSVPath,
     getMatchupHTMLSavePath,
@@ -107,11 +107,7 @@ def getSynergiesDataFrame(synergy_soup: BeautifulSoup) -> pd.DataFrame:
 def parseMatchupsForRole(
     role: str, matchup_cells: list[PageElement], matchups_df: pd.DataFrame
 ) -> None:
-    WR = 0
-    DELTA1 = 1
-    DELTA2 = 2
-    PR = 3
-    GAMES = 4
+    div_idx = {"wr": 0, "delta1": 1, "delta2": 2, "pr": 3, "games": 4}
     logger.info("Parsing Matchups for " + role)
     for matchup_cell in matchup_cells:
         champ = getChampName(matchup_cell)
@@ -124,23 +120,22 @@ def parseMatchupsForRole(
         row.append(champ)
         divs = matchup_cell.find_all_next("div")
 
-        if len(divs) != 5:
+        if len(divs) != len(div_idx):
             logger.error(
                 "Invalid number of divs in the matchup celsl, could cause improper parsing"
             )
             logger.error("Exiting!")
             exit(-1)
         div_num = 0
-        for div in divs:
+        for div_num in range(0, len(div_idx)):
             # Convert div value to number
-            if div_num != GAMES:
-                val = float(div.text.strip())
+            if div_num != div_idx["games"]:
+                val = float(divs[div_num].text.strip())
             else:
-                div_text = div.text.strip()
+                div_text = divs[div_num].text.strip()
                 div_text = "".join(div_text.split(","))
                 val = int(div_text)
             row.append(val)
-            div_num += 1
         matchups_df.loc[len(matchups_df.index)] = row
 
 

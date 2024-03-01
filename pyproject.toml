@@ -1,18 +1,21 @@
 [tool.poetry]
-name = "lol-best-pick"
+name = "lol_best_pick"
 version = "0.1.0"
 description = "Based on the champions picked already in your lobby, find the best champion choice within your champion pool."
 authors = ["Jared Hawley <j.yelwah@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
 selenium = "^4.18.1"
 bs4 = "^0.0.2"
+types-beautifulsoup4 = "^4.12.0.20240106"
 pandas = "^2.2.1"
 pandas-stubs = "^2.2.0.240218"
-types-beautifulsoup4 = "^4.12.0.20240106"
 webdriver-manager = "^4.0.1"
+pyyaml = "^6.0.1"
+types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.2.2"
@@ -68,7 +71,6 @@ docstring-code-line-length = "dynamic"
 
 [tool.mypy]
 disallow_incomplete_defs = true
-dissallow_untyped_defs = true
 install_types = true
 non_interactive = true
 pretty = true

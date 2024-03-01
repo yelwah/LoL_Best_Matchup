@@ -1,0 +1,31 @@
+bans:
+my_role: "middle"
+champ_pool:
+  top:
+    - "akshan"
+    - "garen"
+  jungle:
+    - "diana"
+    - "nocturne"
+    - "sejuani"
+  middle:
+    - "akshan"
+    - "lissandra"
+    - "diana"
+    - "galio"
+  bot:      
+  support:  
+
+ally_team:
+  top:      
+  jungle:   
+  middle:   
+  bot:      
+  support:  
+
+enemy_team:
+  top:      
+  jungle:   
+  middle:   "smolder"
+  bot:      
+  support:  

@@ -2,7 +2,7 @@ import math
 
 import pandas as pd
 
-from util import cleanString, getMatchupCSVPath, getSynergyCSVPath
+from .util import cleanString, getMatchupCSVPath, getSynergyCSVPath
 
 
 def sigmoid(x):
@@ -26,8 +26,10 @@ def removeUnavailableChampions(
 
 
 def cleanChampNamesDict(
-    champs: dict[str, str],
+    champs: dict[str, str] | None,
 ) -> dict[str, str]:
+    if champs is None:
+        return {}
     cleaned: dict[str, str] = {}
     for role, name in champs.items():
         cleaned[role] = cleanString(name)
@@ -35,8 +37,10 @@ def cleanChampNamesDict(
 
 
 def cleanChampNamesList(
-    champs: list[str],
+    champs: list[str] | None,
 ) -> list[str]:
+    if champs is None:
+        return []
     cleaned: list[str] = []
     for name in champs:
         cleaned.append(cleanString(name))
@@ -69,7 +73,7 @@ def filtedValidMatches(all_entries_df, team, my_champ, my_role):
     valid_entries = []
     for role, champ in team.items():
         # Skip unitialized entries
-        if champ == None or champ == "":
+        if champ is None or champ == "":
             continue
 
         # Try to pull matchup data from table
@@ -125,7 +129,6 @@ def bestPick(
     )
 
     for my_champ in my_pool[my_role]:
-        skipped = 0
         print("\n" + my_champ.upper() + " " + my_role.upper())
         # MATCHUPS -------------------------------------------------------------------------------
         all_matchups_df = pd.read_csv(getMatchupCSVPath(my_role, my_champ))
@@ -215,4 +218,5 @@ def calcScore(my_role, enemy_role, metric):
     scaled_score = sigmoid(metric) * scale_values[scaling_idx]
     scaled_average_score = 0.5 * scale_values[scaling_idx]
 
+    return round((scaled_score - scaled_average_score) * 100)
     return round((scaled_score - scaled_average_score) * 100)
